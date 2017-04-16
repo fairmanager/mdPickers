@@ -151,8 +151,7 @@ module.provider("$mdpDatePicker", function() {
                 locals: {
                     currentDate: currentDate,
                     options: options
-                },
-                skipHide: true
+                }
             });
         };
     
