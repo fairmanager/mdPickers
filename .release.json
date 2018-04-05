@@ -1,4 +1,13 @@
 {
+	"before": {
+		"tasks": [
+			{
+				"name": "Building dist files",
+				"command": "gulp",
+				"comment": "[TASK] Rebuilt dist files"
+			}
+		]
+	},
 	"patch": {
 		"tasks": [
 			{
