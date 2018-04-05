@@ -1,3 +1,6 @@
-node_modules
-bower_components
-/.project
+bower_components/
+node_modules/
+
+# Garbage lockfiles from garbage package managers
+package-lock.json
+yarn.lock
