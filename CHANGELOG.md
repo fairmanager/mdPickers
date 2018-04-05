@@ -1,3 +1,9 @@
+### 1.0.0
+
+* AngularJS 1.6 support
+* Support multiple pickers
+* Cleanup
+
 ### 0.7.5
 
 Minor bugfixes
