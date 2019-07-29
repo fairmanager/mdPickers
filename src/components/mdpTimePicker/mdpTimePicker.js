@@ -318,7 +318,7 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 			ngModel.$parsers.unshift( function( value ) {
 				var parsed = moment( value, scope.timeFormat, true );
 				if( parsed.isValid() ) {
-					if( moment.isMomente( ngModel.$modelValue ) ) {
+					if( moment.isMoment( ngModel.$modelValue ) ) {
 						var originalModel = moment( ngModel.$modelValue );
 						originalModel.minutes( parsed.minutes() );
 						originalModel.hours( parsed.hours() );
