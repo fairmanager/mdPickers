@@ -201,7 +201,7 @@ module.provider( "$mdpTimePicker", function() {
 
 	this.$get = [ "$mdDialog", function( $mdDialog ) {
 		var timePicker = function( time, options ) {
-			if( !angular.isDate( time ) ) {
+			if( !moment.isMoment( time ) ) {
 				time = Date.now();
 			}
 			if( !angular.isObject( options ) ) {
@@ -299,7 +299,7 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 
 			// update input element if model has changed
 			ngModel.$formatters.unshift( function( value ) {
-				var time = angular.isDate( value ) && moment( value );
+				var time = moment.isMoment( value ) && moment( value );
 				if( time && time.isValid() ) {
 					updateInputElement( time.format( scope.timeFormat ) );
 				} else {
@@ -308,7 +308,7 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 			} );
 
 			ngModel.$validators.format = function( modelValue, viewValue ) {
-				return !viewValue || angular.isDate( viewValue ) || moment( viewValue, scope.timeFormat, true ).isValid();
+				return !viewValue || moment.isMoment( viewValue ) || moment( viewValue, scope.timeFormat, true ).isValid();
 			};
 
 			ngModel.$validators.required = function( modelValue, viewValue ) {
@@ -318,7 +318,7 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 			ngModel.$parsers.unshift( function( value ) {
 				var parsed = moment( value, scope.timeFormat, true );
 				if( parsed.isValid() ) {
-					if( angular.isDate( ngModel.$modelValue ) ) {
+					if( moment.isMomente( ngModel.$modelValue ) ) {
 						var originalModel = moment( ngModel.$modelValue );
 						originalModel.minutes( parsed.minutes() );
 						originalModel.hours( parsed.hours() );
@@ -326,7 +326,7 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 
 						parsed = originalModel;
 					}
-					return parsed.toDate();
+					return parsed;//.toDate();
 				} else {
 					return null;
 				}
@@ -339,7 +339,7 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 			}
 
 			function updateTime( time ) {
-				var value = moment( time, angular.isDate( time ) ? null : scope.timeFormat, true ),
+				var value = moment( time, moment.isMoment( time ) ? null : scope.timeFormat, true ),
 					strValue = value.format( scope.timeFormat );
 
 				if( value.isValid() ) {
