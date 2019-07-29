@@ -23,6 +23,6 @@ trim_trailing_whitespace = false
 [*.{jade,pug}]
 trim_trailing_whitespace = false
 
-[*.yml]
+[*.{yaml,yml}]
 indent_style = space
 indent_size = 4
