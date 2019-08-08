@@ -604,13 +604,19 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 
 /* global moment, angular */
 
-function TimePickerCtrl( $scope, $mdDialog, time, autoSwitch, $mdMedia ) {
+function TimePickerCtrl( $scope, $mdDialog, time, autoSwitch, ampm, confirmText, cancelText, $mdMedia ) {
 	var self = this;
 	this.VIEW_HOURS   = 1;
 	this.VIEW_MINUTES = 2;
 	this.currentView  = this.VIEW_HOURS;
 	this.time         = moment( time );
 	this.autoSwitch   = !!autoSwitch;
+	this.ampm         = !!ampm;
+	this.confirmText  = confirmText ? confirmText : "OK";
+	this.cancelText   = cancelText ? cancelText : "Cancel";
+
+	this.hoursFormat   = self.ampm ? "h" : "H";
+	this.minutesFormat = "mm";
 
 	this.clockHours   = parseInt( this.time.format( "h" ) );
 	this.clockMinutes = parseInt( this.time.minutes() );
@@ -652,7 +658,7 @@ function ClockCtrl( $scope ) {
 		self.steps       = [];
 		self.CLOCK_TYPES = {
 			"hours": {
-				range: 12,
+				range: self.ampm ? 12 : 24,
 			},
 			"minutes": {
 				range: 60,
@@ -661,11 +667,16 @@ function ClockCtrl( $scope ) {
 		self.type = self.type || "hours";
 		switch (self.type) {
 			case TYPE_HOURS:
-				for (var i = 1; i <= 12; i++) {
+				var f = self.ampm ? 1 : 2;
+				var t = self.ampm ? 12 : 23;
+				for (var i = f; i <= t; i += f) {
 					self.steps.push( i );
 				}
+				if( !self.ampm ) {
+					self.steps.push( 0 );
+				}
 				self.selected = self.time.hours() || 0;
-				if( self.selected > 12 ) {
+				if( self.ampm && self.selected > 12 ) {
 					self.selected -= 12;
 				}
 
@@ -684,7 +695,7 @@ function ClockCtrl( $scope ) {
 		var divider = 1;
 		switch (self.type) {
 			case TYPE_HOURS:
-				divider = 12;
+				divider = self.ampm ? 12 : 24;
 				break;
 			case TYPE_MINUTES:
 				divider = 60;
@@ -703,7 +714,7 @@ function ClockCtrl( $scope ) {
 		var divider = 0;
 		switch (self.type) {
 			case TYPE_HOURS:
-				divider = 12;
+				divider = self.ampm ? 12 : 24;
 				break;
 			case TYPE_MINUTES:
 				divider = 60;
@@ -720,7 +731,7 @@ function ClockCtrl( $scope ) {
 
 		switch (self.type) {
 			case TYPE_HOURS:
-				if( self.time.format( "A" ) == "PM" ) {
+				if( self.ampm && self.time.format( "A" ) == "PM" ) {
 					time += 12;
 				}
 				this.time.hours( time );
@@ -738,11 +749,12 @@ function ClockCtrl( $scope ) {
 
 module.directive( "mdpClock", [ "$animate", "$timeout", function( $animate, $timeout ) {
 	return {
-		restrict:         'E',
+		restrict:         "E",
 		bindToController: {
-			'type':       '@?',
-			'time':       '=',
-			'autoSwitch': '=?'
+			"type":       "@?",
+			"time":       "=",
+			"autoSwitch": "=?",
+			"ampm":       "=?"
 		},
 		replace:  true,
 		template: '<div class="mdp-clock">' +
@@ -813,39 +825,42 @@ module.provider( "$mdpTimePicker", function() {
 			}
 
 			return $mdDialog.show( {
-				controller:          [ '$scope', '$mdDialog', 'time', 'autoSwitch', '$mdMedia', TimePickerCtrl ],
+				controller:          [ '$scope', '$mdDialog', 'time', 'autoSwitch', 'ampm', 'confirmText', 'cancelText', '$mdMedia', TimePickerCtrl ],
 				controllerAs:        'timepicker',
 				clickOutsideToClose: true,
 				template:            '<md-dialog aria-label="" class="mdp-timepicker" ng-class="{ \'portrait\': !$mdMedia(\'gt-xs\') }">' +
 					'<md-dialog-content layout-gt-xs="row" layout-wrap>' +
 					'<md-toolbar layout-gt-xs="column" layout-xs="row" layout-align="center center" flex class="mdp-timepicker-time md-hue-1 md-primary">' +
 					'<div class="mdp-timepicker-selected-time">' +
-					'<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_HOURS }" ng-click="timepicker.currentView = timepicker.VIEW_HOURS">{{ timepicker.time.format("h") }}</span>:' +
-					'<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_MINUTES }" ng-click="timepicker.currentView = timepicker.VIEW_MINUTES">{{ timepicker.time.format("mm") }}</span>' +
+					'<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_HOURS }" ng-click="timepicker.currentView = timepicker.VIEW_HOURS">{{ timepicker.time.format(timepicker.hoursFormat) }}</span>:' +
+					'<span ng-class="{ \'active\': timepicker.currentView == timepicker.VIEW_MINUTES }" ng-click="timepicker.currentView = timepicker.VIEW_MINUTES">{{ timepicker.time.format(timepicker.minutesFormat) }}</span>' +
 					'</div>' +
-					'<div layout="column" class="mdp-timepicker-selected-ampm">' +
+					'<div layout="column" ng-show="timepicker.ampm" class="mdp-timepicker-selected-ampm">' +
 					'<span ng-click="timepicker.setAM()" ng-class="{ \'active\': timepicker.time.hours() < 12 }">AM</span>' +
 					'<span ng-click="timepicker.setPM()" ng-class="{ \'active\': timepicker.time.hours() >= 12 }">PM</span>' +
 					'</div>' +
 					'</md-toolbar>' +
 					'<div>' +
 					'<div class="mdp-clock-switch-container" ng-switch="timepicker.currentView" layout layout-align="center center">' +
-					'<mdp-clock class="mdp-animation-zoom" auto-switch="timepicker.autoSwitch" time="timepicker.time" type="hours" ng-switch-when="1"></mdp-clock>' +
-					'<mdp-clock class="mdp-animation-zoom" auto-switch="timepicker.autoSwitch" time="timepicker.time" type="minutes" ng-switch-when="2"></mdp-clock>' +
+					'<mdp-clock class="mdp-animation-zoom" ampm="timepicker.ampm" auto-switch="timepicker.autoSwitch" time="timepicker.time" type="hours" ng-switch-when="1"></mdp-clock>' +
+					'<mdp-clock class="mdp-animation-zoom" ampm="timepicker.ampm" auto-switch="timepicker.autoSwitch" time="timepicker.time" type="minutes" ng-switch-when="2"></mdp-clock>' +
 					'</div>' +
 
 					'<md-dialog-actions layout="row">' +
 					'<span flex></span>' +
-					'<md-button ng-click="timepicker.cancel()" aria-label="' + LABEL_CANCEL + '">' + LABEL_CANCEL + '</md-button>' +
-					'<md-button ng-click="timepicker.confirm()" class="md-primary" aria-label="' + LABEL_OK + '">' + LABEL_OK + '</md-button>' +
+					'<md-button ng-click="timepicker.cancel()" aria-label="{{timepicker.cancelText}}">{{timepicker.cancelText}}</md-button>' +
+					'<md-button ng-click="timepicker.confirm()" class="md-primary" aria-label="{{timepicker.confirmText}}">{{timepicker.confirmText}}</md-button>' +
 					'</md-dialog-actions>' +
 					'</div>' +
 					'</md-dialog-content>' +
 					'</md-dialog>',
 				targetEvent: options.targetEvent,
 				locals:      {
-					time:       time,
-					autoSwitch: options.autoSwitch
+					time:        time,
+					autoSwitch:  options.autoSwitch,
+					ampm:        options.ampm,
+					confirmText: options.confirmText,
+					cancelText:  options.cancelText
 				},
 				multiple: true
 			} );
@@ -878,7 +893,10 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 			"timeFormat":  "@mdpFormat",
 			"placeholder": "@mdpPlaceholder",
 			"autoSwitch":  "=?mdpAutoSwitch",
-			"disabled":    "=?mdpDisabled"
+			"disabled":    "=?mdpDisabled",
+			"ampm":        "=?mdpAmpm",
+			"confirmText": "@mdpConfirmText",
+			"cancelText":  "@mdpCancelText"
 		},
 		link: function( scope, element, attrs, ngModel, $transclude ) {
 			var inputElement    = angular.element( element[ 0 ].querySelector( 'input' ) ),
@@ -966,7 +984,10 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 			scope.showPicker = function( ev ) {
 				$mdpTimePicker( ngModel.$modelValue, {
 					targetEvent: ev,
-					autoSwitch:  scope.autoSwitch
+					autoSwitch:  scope.autoSwitch,
+					ampm:        scope.ampm,
+					confirmText: scope.confirmText,
+					cancelText:  scope.cancelText
 				} ).then( function( time ) {
 					updateTime( time, true );
 				} );
@@ -992,15 +1013,21 @@ module.directive( "mdpTimePicker", [ "$mdpTimePicker", "$timeout", function( $md
 		restrict: 'A',
 		require:  'ngModel',
 		scope:    {
-			"timeFormat": "@mdpFormat",
-			"autoSwitch": "=?mdpAutoSwitch",
+			"timeFormat":  "@mdpFormat",
+			"autoSwitch":  "=?mdpAutoSwitch",
+			"ampm":        "=?mdpAmpm",
+			"confirmText": "@mdpConfirmText",
+			"cancelText":  "@mdpCancelText"
 		},
 		link: function( scope, element, attrs, ngModel, $transclude ) {
 			scope.format = scope.format || "HH:mm";
 			function showPicker( ev ) {
 				$mdpTimePicker( ngModel.$modelValue, {
 					targetEvent: ev,
-					autoSwitch:  scope.autoSwitch
+					autoSwitch:  scope.autoSwitch,
+					ampm:        scope.ampm,
+					confirmText: scope.confirmText,
+					cancelText:  scope.cancelText
 				} ).then( function( time ) {
 					ngModel.$setViewValue( moment( time ).format( scope.format ) );
 					ngModel.$render();
