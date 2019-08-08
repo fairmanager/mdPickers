@@ -30,18 +30,18 @@ function DatePickerCtrl( $scope, $mdDialog, $mdMedia, $timeout, currentDate, opt
 	}
 
 	this.yearItems = {
-		currentIndex_:  0,
-		PAGE_SIZE:      5,
-		START: (        self.minDate ? self.minDate.year() : 1900 ),
-		END: (          self.maxDate ? self.maxDate.year() : 0 ),
-		getItemAtIndex: function( index ) {
+		currentIndex_ : 0,
+		PAGE_SIZE : 5,
+		START : ( self.minDate ? self.minDate.year() : 1900 ),
+		END : ( self.maxDate ? self.maxDate.year() : 0 ),
+		getItemAtIndex : function( index ) {
 			if( this.currentIndex_ < index ) {
 				this.currentIndex_ = index;
 			}
 
 			return this.START + index;
 		},
-		getLength: function() {
+		getLength : function() {
 			return Math.min(
 				this.currentIndex_ + Math.floor( this.PAGE_SIZE / 2 ),
 				Math.abs( this.START - this.END ) + 1
@@ -114,7 +114,7 @@ module.provider( "$mdpDatePicker", function() {
 
 	this.$get = [ "$mdDialog", function( $mdDialog ) {
 		var datePicker = function( currentDate, options ) {
-			if( !angular.isDate( currentDate ) ) {
+			if( !moment.isMoment( currentDate ) ) {
 				currentDate = Date.now();
 			}
 			if( !angular.isObject( options ) ) {
@@ -124,10 +124,10 @@ module.provider( "$mdpDatePicker", function() {
 			options.displayFormat = DISPLAY_FORMAT;
 
 			return $mdDialog.show( {
-				controller:          [ '$scope', '$mdDialog', '$mdMedia', '$timeout', 'currentDate', 'options', DatePickerCtrl ],
-				controllerAs:        'datepicker',
-				clickOutsideToClose: true,
-				template:            '<md-dialog aria-label="" class="mdp-datepicker" ng-class="{ \'portrait\': !$mdMedia(\'gt-xs\') }">' +
+				controller : [ '$scope', '$mdDialog', '$mdMedia', '$timeout', 'currentDate', 'options', DatePickerCtrl ],
+				controllerAs : 'datepicker',
+				clickOutsideToClose : true,
+				template : '<md-dialog aria-label="" class="mdp-datepicker" ng-class="{ \'portrait\': !$mdMedia(\'gt-xs\') }">' +
 					'<md-dialog-content layout="row" layout-wrap>' +
 					'<div layout="column" layout-align="start center">' +
 					'<md-toolbar layout-align="start start" flex class="mdp-datepicker-date-wrapper md-hue-1 md-primary" layout="column">' +
@@ -152,12 +152,12 @@ module.provider( "$mdpDatePicker", function() {
 					'</div>' +
 					'</md-dialog-content>' +
 					'</md-dialog>',
-				targetEvent: options.targetEvent,
-				locals:      {
-					currentDate: currentDate,
-					options:     options
+				targetEvent : options.targetEvent,
+				locals : {
+					currentDate : currentDate,
+					options : options
 				},
-				multiple: true
+				multiple : true
 			} );
 		};
 
@@ -195,12 +195,12 @@ function CalendarCtrl( $scope ) {
 
 
 		var arr = [];
-		for (var i = 1; i <= ( firstDay + days ); i++) {
+		for( var i = 1; i <= ( firstDay + days ); i++ ) {
 			var day = null;
 			if( i > firstDay ) {
 				day = {
-					value: ( i - firstDay ),
-					enabled: self.isDayEnabled( moment( self.date ).date( i - firstDay ).toDate() )
+					value : ( i - firstDay ),
+					enabled : self.isDayEnabled( moment( self.date ).date( i - firstDay ).toDate() )
 				};
 			}
 			arr.push( day );
@@ -242,14 +242,14 @@ function CalendarCtrl( $scope ) {
 
 module.directive( "mdpCalendar", [ "$animate", function( $animate ) {
 	return {
-		restrict:         'E',
-		bindToController: {
-			"date":       "=",
-			"minDate":    "=",
-			"maxDate":    "=",
-			"dateFilter": "="
+		restrict : 'E',
+		bindToController : {
+			"date" : "=",
+			"minDate" : "=",
+			"maxDate" : "=",
+			"dateFilter" : "="
 		},
-		template: '<div class="mdp-calendar">' +
+		template : '<div class="mdp-calendar">' +
 			'<div layout="row" layout-align="space-between center">' +
 			'<md-button aria-label="previous month" class="md-icon-button" ng-click="calendar.prevMonth()"><md-icon md-svg-icon="mdp-chevron-left"></md-icon></md-button>' +
 			'<div class="mdp-calendar-monthyear" ng-show="!calendar.animating">{{ calendar.date.format("MMMM YYYY") }}</div>' +
@@ -260,14 +260,14 @@ module.directive( "mdpCalendar", [ "$animate", function( $animate ) {
 			'</div>' +
 			'<div layout="row" layout-align="start center" layout-wrap class="mdp-calendar-days" ng-class="{ \'mdp-animate-next\': calendar.animating }" ng-show="!calendar.animating" md-swipe-left="calendar.nextMonth()" md-swipe-right="calendar.prevMonth()">' +
 			'<div layout layout-align="center center" ng-repeat-start="day in calendar.daysInMonth track by $index" ng-class="{ \'mdp-day-placeholder\': !day }">' +
-			'<md-button class="md-icon-button md-raised" aria-label="Select day" ng-if="day" ng-class="{ \'md-accent\': calendar.date.date() == day.value }" ng-click="calendar.selectDate(day.value)" ng-disabled="!day.enabled">{{ day.value }}</md-button>' +
+			'<md-button class="md-raised" aria-label="Select day" ng-if="day" ng-class="{ \'md-accent\': calendar.date.date() == day.value }" ng-click="calendar.selectDate(day.value)" ng-disabled="!day.enabled">{{ day.value }}</md-button>' +
 			'</div>' +
 			'<div flex="100" ng-if="($index + 1) % 7 == 0" ng-repeat-end></div>' +
 			'</div>' +
 			'</div>',
-		controller:   [ "$scope", CalendarCtrl ],
-		controllerAs: "calendar",
-		link:         function( scope, element, attrs, ctrl ) {
+		controller : [ "$scope", CalendarCtrl ],
+		controllerAs : "calendar",
+		link : function( scope, element, attrs, ctrl ) {
 			var animElements = [
 				element[ 0 ].querySelector( ".mdp-calendar-week-days" ),
 				element[ 0 ].querySelector( '.mdp-calendar-days' ),
@@ -288,7 +288,7 @@ module.directive( "mdpCalendar", [ "$animate", function( $animate ) {
 				}
 
 				if( direction ) {
-					for (var i in animElements) {
+					for( var i in animElements ) {
 						animElements[ i ].addClass( direction );
 						$animate.removeClass( animElements[ i ], direction );
 					}
@@ -299,34 +299,34 @@ module.directive( "mdpCalendar", [ "$animate", function( $animate ) {
 } ] );
 
 function formatValidator( value, format ) {
-	return !value || angular.isDate( value ) || moment( value, format, true ).isValid();
+	return !value || moment.isMoment( value ) || moment( value, format, true ).isValid();
 }
 
 function minDateValidator( value, format, minDate ) {
 	var minDate = moment( minDate, "YYYY-MM-DD", true );
-	var date    = angular.isDate( value ) ? moment( value ) : moment( value, format, true );
+	var date    = moment.isMoment( value ) ? moment( value ) : moment( value, format, true );
 
 	return !value ||
-		angular.isDate( value ) ||
+		moment.isMoment( value ) ||
 		!minDate.isValid() ||
 		date.isSameOrAfter( minDate );
 }
 
 function maxDateValidator( value, format, maxDate ) {
 	var maxDate = moment( maxDate, "YYYY-MM-DD", true );
-	var date    = angular.isDate( value ) ? moment( value ) : moment( value, format, true );
+	var date    = moment.isMoment( value ) ? moment( value ) : moment( value, format, true );
 
 	return !value ||
-		angular.isDate( value ) ||
+		moment.isMoment( value ) ||
 		!maxDate.isValid() ||
 		date.isSameOrBefore( maxDate );
 }
 
 function filterValidator( value, format, filter ) {
-	var date = angular.isDate( value ) ? moment( value ) : moment( value, format, true );
+	var date = moment.isMoment( value ) ? moment( value ) : moment( value, format, true );
 
 	return !value ||
-		angular.isDate( value ) ||
+		moment.isMoment( value ) ||
 		!angular.isFunction( filter ) ||
 		!filter( date );
 }
@@ -337,10 +337,10 @@ function requiredValidator( value, ngModel ) {
 
 module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $mdpDatePicker, $timeout ) {
 	return {
-		restrict:   'E',
-		require:    'ngModel',
-		transclude: true,
-		template:   function( element, attrs ) {
+		restrict : 'E',
+		require : 'ngModel',
+		transclude : true,
+		template : function( element, attrs ) {
 			var noFloat  = angular.isDefined( attrs.mdpNoFloat ),
 				placeholder = angular.isDefined( attrs.mdpPlaceholder ) ? attrs.mdpPlaceholder : "",
 				openOnClick = angular.isDefined( attrs.mdpOpenOnClick ) ? true : false;
@@ -354,19 +354,19 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 				'</md-input-container>' +
 				'</div>';
 		},
-		scope: {
-			"minDate":     "=mdpMinDate",
-			"maxDate":     "=mdpMaxDate",
-			"dateFilter":  "=mdpDateFilter",
-			"dateFormat":  "@mdpFormat",
-			"placeholder": "@mdpPlaceholder",
-			"noFloat":     "=mdpNoFloat",
-			"openOnClick": "=mdpOpenOnClick",
-			"disabled":    "=?mdpDisabled"
+		scope : {
+			"minDate" : "=mdpMinDate",
+			"maxDate" : "=mdpMaxDate",
+			"dateFilter" : "=mdpDateFilter",
+			"dateFormat" : "@mdpFormat",
+			"placeholder" : "@mdpPlaceholder",
+			"noFloat" : "=mdpNoFloat",
+			"openOnClick" : "=mdpOpenOnClick",
+			"disabled" : "=?mdpDisabled"
 		},
-		link: {
-			pre:  function( scope, element, attrs, ngModel, $transclude ) {},
-			post: function( scope, element, attrs, ngModel, $transclude ) {
+		link : {
+			pre : function( scope, element, attrs, ngModel, $transclude ) {},
+			post : function( scope, element, attrs, ngModel, $transclude ) {
 				var inputElement    = angular.element( element[ 0 ].querySelector( 'input' ) ),
 					inputContainer     = angular.element( element[ 0 ].querySelector( 'md-input-container' ) ),
 					inputContainerCtrl = inputContainer.controller( "mdInputContainer" );
@@ -387,7 +387,7 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 
 				// update input element if model has changed
 				ngModel.$formatters.unshift( function( value ) {
-					var date = angular.isDate( value ) && moment( value );
+					var date = moment.isMoment( value ) && moment( value );
 					if( date && date.isValid() ) {
 						updateInputElement( date.format( scope.dateFormat ) );
 					} else {
@@ -418,7 +418,7 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 				ngModel.$parsers.unshift( function( value ) {
 					var parsed = moment( value, scope.dateFormat, true );
 					if( parsed.isValid() ) {
-						if( angular.isDate( ngModel.$modelValue ) ) {
+						if( moment.isMoment( ngModel.$modelValue ) ) {
 							var originalModel = moment( ngModel.$modelValue );
 							originalModel.year( parsed.year() );
 							originalModel.month( parsed.month() );
@@ -439,7 +439,7 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 				}
 
 				function updateDate( date ) {
-					var value = moment( date, angular.isDate( date ) ? null : scope.dateFormat, true ),
+					var value = moment( date, moment.isMoment( date ) ? null : scope.dateFormat, true ),
 						strValue = value.format( scope.dateFormat );
 
 					if( value.isValid() ) {
@@ -461,10 +461,10 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 
 				scope.showPicker = function( ev ) {
 					$mdpDatePicker( ngModel.$modelValue, {
-						minDate:     scope.minDate,
-						maxDate:     scope.maxDate,
-						dateFilter:  scope.dateFilter,
-						targetEvent: ev
+						minDate : scope.minDate,
+						maxDate : scope.maxDate,
+						dateFilter : scope.dateFilter,
+						targetEvent : ev
 					} ).then( updateDate );
 				};
 
@@ -487,15 +487,15 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 
 module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $mdpDatePicker, $timeout ) {
 	return {
-		restrict: 'A',
-		require:  'ngModel',
-		scope:    {
-			"minDate":    "@min",
-			"maxDate":    "@max",
-			"dateFilter": "=mdpDateFilter",
-			"dateFormat": "@mdpFormat",
+		restrict : 'A',
+		require : 'ngModel',
+		scope : {
+			"minDate" : "@min",
+			"maxDate" : "@max",
+			"dateFilter" : "=mdpDateFilter",
+			"dateFormat" : "@mdpFormat",
 		},
-		link: function( scope, element, attrs, ngModel, $transclude ) {
+		link : function( scope, element, attrs, ngModel, $transclude ) {
 			scope.dateFormat = scope.dateFormat || "YYYY-MM-DD";
 
 			ngModel.$validators.format = function( modelValue, viewValue ) {
@@ -516,10 +516,10 @@ module.directive( "mdpDatePicker", [ "$mdpDatePicker", "$timeout", function( $md
 
 			function showPicker( ev ) {
 				$mdpDatePicker( ngModel.$modelValue, {
-					minDate:     scope.minDate,
-					maxDate:     scope.maxDate,
-					dateFilter:  scope.dateFilter,
-					targetEvent: ev
+					minDate : scope.minDate,
+					maxDate : scope.maxDate,
+					dateFilter : scope.dateFilter,
+					targetEvent : ev
 				} ).then( function( time ) {
 					ngModel.$setViewValue( moment( time ).format( scope.format ) );
 					ngModel.$render();
